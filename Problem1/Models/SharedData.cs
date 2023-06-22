@@ -16,14 +16,13 @@ namespace Problem1.Models
 
     public class SharedData : IReadWriteData
     {
-        private static readonly object _lockObject = new object();
-        private readonly Queue<int> _data;
-
-        public object LockObject { get; } = _lockObject;
+        public object LockObject { get; init; }
+        private readonly ConcurrentQueue<int> _data;
 
         public SharedData()
         {
-            _data = new Queue<int>();
+            _data = new ConcurrentQueue<int>();
+            LockObject = new object();
         }
 
         public int Get()
@@ -32,8 +31,7 @@ namespace Problem1.Models
 
             if (!isSucceeded)
             {
-                Console.WriteLine("Can't dequeue");
-                //throw new InvalidOperationException("Can't dequeue");
+                Console.WriteLine($"Can't dequeue, Value:{result}");
             }
 
             return result;
