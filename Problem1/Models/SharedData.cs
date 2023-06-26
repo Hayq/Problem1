@@ -6,7 +6,6 @@ namespace Problem1.Models
     {
         int Get();
         int Count();
-        object LockObject { get; }
     }
 
     public interface IReadWriteData : IReadData
@@ -16,13 +15,11 @@ namespace Problem1.Models
 
     public class SharedData : IReadWriteData
     {
-        public object LockObject { get; init; }
         private readonly ConcurrentQueue<int> _data;
 
         public SharedData()
         {
             _data = new ConcurrentQueue<int>();
-            LockObject = new object();
         }
 
         public int Get()

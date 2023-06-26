@@ -4,7 +4,7 @@ namespace Problem1.Services
 {
     public class ProducerService : BaseService
     {
-        private const int MAX_SIZE_OF_QUEUE = 100;
+        private const int MAX_SIZE_OF_QUEUE = 99;
 
         private readonly IReadWriteData _readWriteData;
         private readonly IProducerEvent _producerAction;
@@ -18,7 +18,7 @@ namespace Problem1.Services
             _cancellationToken = cancellationToken.Register(OnCancel).Token;
 
             _producerSync = new AutoResetEvent(true);
-            producerAction.StartWriteAction = OnStartWriteAction;
+            producerAction.StartWriteAction += OnStartWriteAction;
         }
 
         public void ProducerWork()
@@ -31,12 +31,10 @@ namespace Problem1.Services
 
                 RandomThreadSleep();
 
-                //lock (_readWriteData.LockObject)
-                //{
                 var count = _readWriteData.Count();
                 if (count == MAX_SIZE_OF_QUEUE)
                 {
-                    _producerAction.StopWriteAction?.Invoke();
+                    _producerAction.StopWriteAction.Invoke();
                     continue;
                 }
 
@@ -45,11 +43,10 @@ namespace Problem1.Services
 
                 if (count == 0)
                 {
-                    _producerAction.StartReadAction?.Invoke();
+                    _producerAction.StartReadAction.Invoke();
                 }
 
                 _producerSync.Set();
-                //}
             }
         }
 
@@ -60,7 +57,7 @@ namespace Problem1.Services
 
         private void OnCancel()
         {
-            _producerAction.StartReadAction?.Invoke();
+            _producerAction.StartReadAction.Invoke();
             _producerSync.Reset();
         }
     }

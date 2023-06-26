@@ -2,62 +2,73 @@
 
 namespace Problem1.Services
 {
-    public class ProblemService
+    public interface IProblemService
     {
+        void InitProducer(int count);
+        void InitConsumer(int count);
+        void StartThread();
+        void StopThread();
+    }
+
+    public class ProblemService : IProblemService
+    {
+        private UIService _uiService;
+        private FileService _fileService;
+        private ProducerConsumerEvent _eventService;
         private SharedData _data = new SharedData();
         private List<Thread> _producers;
         private List<Thread> _consumers;
         private Thread _display;
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
-        public ProblemService(int n, int m)
+        public ProblemService()
         {
-            _producers = new List<Thread>(n);
-            _consumers = new List<Thread>(m);
+            _uiService = new UIService(this);
+            _fileService = new FileService();
+            _eventService = new ProducerConsumerEvent();
+            
+            var displayManager = new DisplayService(_data, _cancellationTokenSource.Token);//this into ui service maybe
+            _display = new Thread(displayManager.DisplayDataCount);
+        }
 
-            //initiation
-            var eventService = new ProducerConsumerEventService();
-            var producerManager = new ProducerService(_data, eventService, _cancellationTokenSource.Token);
-            var consumerManager = new ConsumerService(_data, eventService, _cancellationTokenSource.Token);
-            var displayManager = new DisplayService(_data, _cancellationTokenSource.Token);
+        public void InitProducer(int count)
+        {
+            var producerManager = new ProducerService(_data, _eventService, _cancellationTokenSource.Token);
+            _producers = new List<Thread>(count);
 
-            _display = new Thread(displayManager.DisplayDataCount)
+            for (int i = 0; i < count; i++)
             {
-                IsBackground = true
-            };
-
-            for (int i = 0; i < n; i++)
-            {
-                var thread = new Thread(producerManager.ProducerWork)
-                {
-                    Name = $"thread_p_{i}",
-                    IsBackground = true
-                };
-
+                var thread = new Thread(producerManager.ProducerWork);
                 _producers.Add(thread);
             }
+        }
 
-            //consumers initiation
-            for (int i = 0; i < m; i++)
+        public void InitConsumer(int count)
+        {
+            var consumerManager = new ConsumerService(_data, _fileService, _eventService, _cancellationTokenSource.Token);
+            _consumers = new List<Thread>(count);
+
+            for (int i = 0; i < count; i++)
             {
-                var thread = new Thread(consumerManager.ConsumerWork)
-                {
-                    Name = $"thread_c_{i}",
-                    IsBackground = true
-                };
-
+                var thread = new Thread(consumerManager.ConsumerWork);
                 _consumers.Add(thread);
             }
         }
 
         public void Start()
         {
+            _uiService.Start();
+        }
+
+        public void StartThread()
+        {
             Parallel.ForEach(_producers, p => p.Start());
             Parallel.ForEach(_consumers, c => c.Start());
             _display.Start();
+        }
 
-            //move to UI service manager
-            Console.ReadLine();
+        public void StopThread()
+        {
             _cancellationTokenSource.Cancel();
         }
     }
