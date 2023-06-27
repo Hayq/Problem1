@@ -1,14 +1,11 @@
-﻿using Problem1.Services;
-
-namespace Problem1
+﻿namespace Problem
 {
     public class Program
     {
         static void Main(string[] args)
         {
-            var problemManager = new ProblemService();
+            var problemManager = new Presentation.Problem();
             problemManager.Start();
-            System.Console.ReadLine();
         }
     }
 }
