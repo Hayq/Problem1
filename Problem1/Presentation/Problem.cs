@@ -12,7 +12,7 @@ namespace Problem.Presentation
         private readonly FileDataContext _fileService;
         private readonly QueueDataContext _queueData;
 
-        private readonly Input _uiService;
+        private readonly Input _input;
         private readonly ProducerConsumerEvent _eventService;
 
         private List<Thread> _producers;
@@ -27,7 +27,7 @@ namespace Problem.Presentation
             _fileService = new FileDataContext();
             _queueData = new QueueDataContext();
 
-            _uiService = new Input(this);
+            _input = new Input(this);
             _eventService = new ProducerConsumerEvent();
 
             var displayService = new DisplayService(_queueData, _cancellationTokenSource.Token);
@@ -60,7 +60,7 @@ namespace Problem.Presentation
 
         public void Start()
         {
-            _uiService.Start();
+            _input.Start();
         }
 
         public void StartThread()
